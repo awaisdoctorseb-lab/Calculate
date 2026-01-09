@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Calculator</title>
+
+<style>
+  body {
+    margin: 0;
+    background: black;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  .calculator {
+    width: 320px;
+    background: black;
+    padding: 20px;
+  }
+
+  .display {
+    color: white;
+    font-size: 64px;
+    text-align: right;
+    padding: 20px 10px;
+    overflow: hidden;
+  }
+
+  .buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  button {
+    height: 65px;
+    border-radius: 50%;
+    border: none;
+    font-size: 24px;
+    color: white;
+    background: #333;
+  }
+
+  button.operator {
+    background: #ff9f0a;
+    color: white;
+  }
+
+  button.gray {
+    background: #a5a5a5;
+    color: black;
+  }
+
+  button.zero {
+    grid-column: span 2;
+    border-radius: 40px;
+    text-align: left;
+    padding-left: 25px;
+  }
+
+  /* Force popup */
+  #forcePopup {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .popup {
+    background: #1c1c1e;
+    padding: 20px;
+    border-radius: 12px;
+    width: 260px;
+    text-align: center;
+  }
+
+  .popup input {
+    width: 100%;
+    font-size: 22px;
+    padding: 10px;
+    border-radius: 8px;
+    border: none;
+    margin-bottom: 15px;
+    text-align: center;
+  }
+
+  .popup button {
+    width: 100%;
+    border-radius: 10px;
+    background: #ff9f0a;
+    color: white;
+  }
+</style>
+</head>
+
+<body>
+
+<div class="calculator">
+  <div id="display" class="display">0</div>
+
+  <div class="buttons">
+    <button class="gray" onclick="clearAll()">AC</button>
+    <button class="gray" onclick="toggleSign()">±</button>
+    <button class="gray" id="percentBtn">%</button>
+    <button class="operator" onclick="setOperator('/')">÷</button>
+
+    <button onclick="inputNum('7')">7</button>
+    <button onclick="inputNum('8')">8</button>
+    <button onclick="inputNum('9')">9</button>
+    <button class="operator" onclick="setOperator('*')">×</button>
+
+    <button onclick="inputNum('4')">4</button>
+    <button onclick="inputNum('5')">5</button>
+    <button onclick="inputNum('6')">6</button>
+    <button class="operator" onclick="setOperator('-')">−</button>
+
+    <button onclick="inputNum('1')">1</button>
+    <button onclick="inputNum('2')">2</button>
+    <button onclick="inputNum('3')">3</button>
+    <button class="operator" onclick="setOperator('+')">+</button>
+
+    <button class="zero" onclick="inputNum('0')">0</button>
+    <button onclick="inputNum('.')">.</button>
+    <button class="operator" onclick="calculate()">=</button>
+  </div>
+</div>
+
+<!-- FORCE POPUP -->
+<div id="forcePopup">
+  <div class="popup">
+    <input type="number" id="forceInput" placeholder="Force number">
+    <button onclick="setForce()">SET</button>
+  </div>
+</div>
+
+<script>
+let display = document.getElementById("display");
+let current = "";
+let previous = null;
+let operator = null;
+let forcedResult = null;
+
+/* INPUT */
+function inputNum(num) {
+  if (current.length < 12) {
+    current += num;
+    display.textContent = current;
+  }
+}
+
+function clearAll() {
+  current = "";
+  previous = null;
+  operator = null;
+  display.textContent = "0";
+}
+
+function toggleSign() {
+  if (current) {
+    current = (parseFloat(current) * -1).toString();
+    display.textContent = current;
+  }
+}
+
+function setOperator(op) {
+  if (!current) return;
+  previous = parseFloat(current);
+  operator = op;
+  current = "";
+}
+
+function calculate() {
+  if (forcedResult !== null) {
+    display.textContent = forcedResult;
+    forcedResult = null; // auto reset
+    current = "";
+    return;
+  }
+
+  if (previous === null || !operator || !current) return;
+
+  let result;
+  let curr = parseFloat(current);
+
+  switch (operator) {
+    case "+": result = previous + curr; break;
+    case "-": result = previous - curr; break;
+    case "*": result = previous * curr; break;
+    case "/": result = previous / curr; break;
+  }
+
+  display.textContent = result;
+  current = result.toString();
+  previous = null;
+  operator = null;
+}
+
+/* PERCENT */
+const percentBtn = document.getElementById("percentBtn");
+let pressTimer;
+
+percentBtn.addEventListener("touchstart", () => {
+  pressTimer = setTimeout(openForcePopup, 1000);
+});
+
+percentBtn.addEventListener("touchend", () => {
+  clearTimeout(pressTimer);
+});
+
+percentBtn.addEventListener("click", () => {
+  if (current) {
+    current = (parseFloat(current) / 100).toString();
+    display.textContent = current;
+  }
+});
+
+/* FORCE */
+function openForcePopup() {
+  document.getElementById("forcePopup").style.display = "flex";
+  document.getElementById("forceInput").value = "";
+}
+
+function setForce() {
+  forcedResult = document.getElementById("forceInput").value;
+  document.getElementById("forcePopup").style.display = "none";
+}
+</script>
+
+</body>
+</html>
